@@ -1,1 +1,15 @@
-hello
+RL 2048 Environment
+
+Usage
+- Human play: `python scripts/play_human.py`
+- Config: edit `conf/env.yaml` for board size, target tile, and spawn probability.
+- Train SAC (discrete): `python scripts/train_sac.py`
+  - Training params in `conf/train.yaml` (kept CPU-friendly by default).
+- Train SB3 SAC (via continuous wrapper): `python scripts/train_sac_sb3.py`
+  - Config in `conf/train_sb3.yaml` (uses continuous-action wrapper and reward shaping).
+- Use saved model and render gameplay: `python scripts/use_model.py --path sb3_sac_model.zip` or `--path model.pt`
+
+Notes
+- The environment is Gymnasium-compatible with actions: 0=up, 1=down, 2=left, 3=right.
+- Reset returns `(obs, info)`. Step returns `(obs, reward, terminated, truncated, info)`.
+ - Discrete SAC implementation uses two critics, categorical policy, auto-entropy tuning by default.

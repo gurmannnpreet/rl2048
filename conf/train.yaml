@@ -1,0 +1,28 @@
+env:
+  size: 4
+  target: 2048
+  spawn_prob_2: 0.9
+
+seed: 42
+
+agent:
+  hidden_dim: 128
+  gamma: 0.99
+  tau: 0.005
+  lr: 0.0003
+  alpha: null           # null -> auto-tune
+  target_entropy: null  # null -> 0.9*log(n_actions)
+
+buffer:
+  capacity: 200000
+
+train:
+  steps: 200000
+  start_steps: 1000
+  batch_size: 128
+  eval_interval: 2000
+  eval_max_steps: 5000
+
+reward:
+  scale: 0.1                # scales merge rewards
+  invalid_move_penalty: -0.5  # discourages selecting invalid moves
