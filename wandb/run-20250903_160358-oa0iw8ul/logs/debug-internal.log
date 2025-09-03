@@ -1,0 +1,15 @@
+{"time":"2025-09-03T16:03:58.368067-06:00","level":"INFO","msg":"stream: starting","core version":"0.21.3"}
+{"time":"2025-09-03T16:03:58.619252-06:00","level":"INFO","msg":"stream: created new stream","id":"oa0iw8ul"}
+{"time":"2025-09-03T16:03:58.619281-06:00","level":"INFO","msg":"stream: started","id":"oa0iw8ul"}
+{"time":"2025-09-03T16:03:58.619283-06:00","level":"INFO","msg":"handler: started","stream_id":"oa0iw8ul"}
+{"time":"2025-09-03T16:03:58.619322-06:00","level":"INFO","msg":"writer: started","stream_id":"oa0iw8ul"}
+{"time":"2025-09-03T16:03:58.61931-06:00","level":"INFO","msg":"sender: started","stream_id":"oa0iw8ul"}
+{"time":"2025-09-03T16:04:09.247265-06:00","level":"WARN","msg":"tensorboard: no root directory","error":"timed out after 10s"}
+{"time":"2025-09-03T16:04:09.247365-06:00","level":"INFO","msg":"tensorboard: tracking new log directory","rootDir":{},"logDir":"LocalOrCloudPath(LocalPath=\"/Users/gurmannnpreet/Documents/CODING/rl2048/SAC_8\")","namespace":""}
+{"time":"2025-09-03T16:04:09.247603-06:00","level":"INFO","msg":"tensorboard: saving file","fileLocation":"/Users/gurmannnpreet/Documents/CODING/rl2048/SAC_8/events.out.tfevents.1756937039.Gurmanpreets-MacBook-Pro-2.local.22834.0","runPath":"SAC_8/events.out.tfevents.1756937039.Gurmanpreets-MacBook-Pro-2.local.22834.0"}
+{"time":"2025-09-03T16:51:03.423814-06:00","level":"INFO","msg":"handler: operation stats","stats":{"operations":[{"desc":"updating run metadata","runtime_seconds":0.086562792}],"total_operations":1}}
+{"time":"2025-09-03T16:51:06.768337-06:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-09-03T16:51:06.998891-06:00","level":"INFO","msg":"stream: closing","id":"oa0iw8ul"}
+{"time":"2025-09-03T16:51:06.998973-06:00","level":"INFO","msg":"handler: closed","stream_id":"oa0iw8ul"}
+{"time":"2025-09-03T16:51:06.999298-06:00","level":"INFO","msg":"sender: closed","stream_id":"oa0iw8ul"}
+{"time":"2025-09-03T16:51:06.999331-06:00","level":"INFO","msg":"stream: closed","id":"oa0iw8ul"}

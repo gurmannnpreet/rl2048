@@ -1,0 +1,89 @@
+_wandb:
+    value:
+        cli_version: 0.21.3
+        e:
+            boq90dmgr4uwucuonnnarc6ra8ee7h1m:
+                apple:
+                    ecpuCores: 4
+                    gpuCores: 10
+                    memoryGb: 24
+                    name: Apple M2
+                    pcpuCores: 4
+                    ramTotalBytes: "25769803776"
+                    swapTotalBytes: "2147483648"
+                codePath: train_sac_sb3.py
+                codePathLocal: train_sac_sb3.py
+                cpu_count: 8
+                cpu_count_logical: 8
+                disk:
+                    /:
+                        total: "245107195904"
+                        used: "238561878016"
+                email: gtiwana@ualberta.ca
+                executable: /Users/gurmannnpreet/Documents/CODING/rl2048/rlenv/bin/python
+                git:
+                    commit: 6d09af1297da099d337d7e419bf02084b90fcbee
+                    remote: https://github.com/gurmannnpreet/rl2048.git
+                host: Gurmanpreets-MacBook-Pro-2.local
+                memory:
+                    total: "25769803776"
+                os: macOS-15.3-arm64-arm-64bit-Mach-O
+                program: /Users/gurmannnpreet/Documents/CODING/rl2048/train_sac_sb3.py
+                python: CPython 3.13.3
+                root: /Users/gurmannnpreet/Documents/CODING/rl2048
+                startedAt: "2025-09-03T20:48:00.016120Z"
+                writerId: boq90dmgr4uwucuonnnarc6ra8ee7h1m
+        m: []
+        python_version: 3.13.3
+        t:
+            "1":
+                - 1
+                - 50
+            "2":
+                - 1
+                - 50
+            "3":
+                - 16
+                - 35
+                - 61
+            "4": 3.13.3
+            "5": 0.21.3
+            "10":
+                - 20
+            "12": 0.21.3
+            "13": darwin-arm64
+agent:
+    value:
+        alpha: null
+        gamma: 0.99
+        hidden_dim: 128
+        lr: 0.0003
+        tau: 0.005
+buffer:
+    value:
+        capacity: 200000
+env:
+    value:
+        size: 4
+        spawn_prob_2: 0.9
+        target: 2048
+reward:
+    value:
+        invalid_move_penalty: -0.5
+        scale: 0.1
+seed:
+    value: 42
+train:
+    value:
+        batch_size: 128
+        eval_interval: 40000
+        eval_max_steps: 5000
+        gradient_steps: 1
+        steps: 200000
+        train_freq: 1
+wandb:
+    value:
+        enabled: true
+        entity: null
+        mode: online
+        project: rl2048

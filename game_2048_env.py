@@ -30,15 +30,26 @@ class Game2048Env(gym.Env):
 
         self.board: np.ndarray | None = None
         self.score: int = 0
+        # Track previous transition details for observation augmentation
+        self.prev_action: int = -1
+        self.prev_moved: bool = False
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         super().reset(seed=seed)
         self.board = np.zeros((self.size, self.size), dtype=np.int32)
         self.score = 0
-        #setting initial 2s in the middle for simplicity
-        self.board[1, 1] = 2
-        self.board[1, 2] = 2
-        info = {"score": self.score}
+        self.prev_action = -1
+        self.prev_moved = False
+        self._add_tile()
+        self._add_tile()
+        # #setting initial 2s in the middle for simplicity
+        # self.board[1, 1] = 2
+        # self.board[1, 2] = 2
+        info = {
+            "score": self.score,
+            "prev_action": self.prev_action,
+            "prev_moved": self.prev_moved,
+        }
         return self.board.copy(), info
 
     def step(self, action: int):
@@ -63,12 +74,19 @@ class Game2048Env(gym.Env):
         # valid actions after the transition
         valid_after = self._valid_actions()
 
+        # record previous action/effect for downstream wrappers/agents
+        self.prev_action = int(action)
+        self.prev_moved = bool(moved)
+
         info = {
             "score": self.score,
             "moved": bool(moved),
             "max_tile": max_tile,
             "valid_actions": valid_before.astype(bool),
             "valid_actions_next": valid_after.astype(bool),
+            # expose previous action/effect as part of info for next-state processing
+            "prev_action": self.prev_action,
+            "prev_moved": self.prev_moved,
         }
         return self.board.copy(), float(reward), bool(terminated), bool(truncated), info
 

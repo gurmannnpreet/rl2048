@@ -22,14 +22,22 @@ def set_seed(seed: int | None):
     torch.manual_seed(seed)
 
 
-def preprocess_obs(obs: np.ndarray) -> np.ndarray:
+def preprocess_obs(obs: np.ndarray, prev_action: int | None = None, prev_moved: bool | None = None) -> np.ndarray:
     # Map board values to log2 scale in [0, 1]
     # 0 stays 0; others -> log2(value)/16 for 2^16 upper
     x = obs.astype(np.float32)
     out = np.zeros_like(x, dtype=np.float32)
     nz = x > 0
     out[nz] = np.log2(x[nz]) / 16.0
-    return out.reshape(-1)  # flatten to 16 dims for 4x4
+    board_vec = out.reshape(-1)
+
+    # Append prev action (one-hot of 4) and moved flag (1)
+    one_hot = np.zeros(4, dtype=np.float32)
+    if prev_action is not None and isinstance(prev_action, (int, np.integer)) and 0 <= int(prev_action) < 4:
+        one_hot[int(prev_action)] = 1.0
+    moved_flag = np.array([1.0 if bool(prev_moved) else 0.0], dtype=np.float32)
+
+    return np.concatenate([board_vec, one_hot, moved_flag], axis=0)
 
 
 class MLP(nn.Module):
@@ -250,7 +258,7 @@ def main(cfg: DictConfig):
 
     num_actions = int(env.action_space.n)
     obs, info = env.reset(seed=cfg.seed)
-    obs_vec = preprocess_obs(obs)
+    obs_vec = preprocess_obs(obs, info.get("prev_action"), info.get("prev_moved"))
     obs_dim = int(obs_vec.shape[0])
 
     agent = DiscreteSAC(
@@ -282,19 +290,65 @@ def main(cfg: DictConfig):
         if t < start_steps:
             action = np.random.randint(0, num_actions)
         else:
-            action = agent.act(obs_vec, greedy=False, mask=info.get("valid_actions"))
+            def prefer_mask(mask: np.ndarray | None, corner: str = "bottom_right") -> np.ndarray | None:
+                if mask is None:
+                    return None
+                mapping = {
+                    "top_left": [0, 2],
+                    "top_right": [0, 3],
+                    "bottom_left": [1, 2],
+                    "bottom_right": [1, 3],
+                }
+                pref = mapping.get(corner, mapping["bottom_right"])
+                mask = mask.astype(bool).copy()
+                if mask.any():
+                    pref_mask = np.zeros_like(mask, dtype=bool)
+                    for a in pref:
+                        if 0 <= a < mask.size:
+                            pref_mask[a] = mask[a]
+                    if pref_mask.any():
+                        return pref_mask
+                return mask
+
+            corner_pref = str(cfg.reward.get("corner", "bottom_right"))
+            mask_for_act = info.get("valid_actions") if isinstance(info.get("valid_actions"), np.ndarray) else None
+            mask_for_act = prefer_mask(mask_for_act, corner=corner_pref)
+            action = agent.act(obs_vec, greedy=False, mask=mask_for_act)
 
         next_obs, reward, terminated, truncated, info_next = env.step(action)
         done = bool(terminated or truncated)
-        next_obs_vec = preprocess_obs(next_obs)
+        next_obs_vec = preprocess_obs(next_obs, info_next.get("prev_action"), info_next.get("prev_moved"))
         # Reward shaping
         reward_scaled = float(reward) * float(cfg.reward.scale)
         if not bool(info_next.get("moved", True)):
             reward_scaled += float(cfg.reward.invalid_move_penalty)
+        # Corner bonus: encourage max tile to stay in a target corner
+        try:
+            corner_bonus = float(cfg.reward.get("corner_bonus", 0.0))
+        except Exception:
+            corner_bonus = 0.0
+        if corner_bonus != 0.0:
+            try:
+                corner = str(cfg.reward.get("corner", "bottom_right"))
+                size = int(env.size)
+                mapping = {
+                    "top_left": (0, 0),
+                    "top_right": (0, size - 1),
+                    "bottom_left": (size - 1, 0),
+                    "bottom_right": (size - 1, size - 1),
+                }
+                y, x = mapping.get(corner, mapping["bottom_right"])
+                max_val = int(next_obs.max())
+                if max_val > 0 and int(next_obs[y, x]) == max_val:
+                    reward_scaled += corner_bonus * (float(np.log2(max_val)) / 16.0)
+            except Exception:
+                pass
         mask_curr = info.get("valid_actions") if isinstance(info.get("valid_actions"), np.ndarray) else None
+        mask_curr = prefer_mask(mask_curr, corner=corner_pref)
         if mask_curr is None:
             mask_curr = np.ones(num_actions, dtype=bool)
         mask_next = info_next.get("valid_actions") if isinstance(info_next.get("valid_actions"), np.ndarray) else info_next.get("valid_actions_next")
+        mask_next = prefer_mask(mask_next, corner=corner_pref)
         if mask_next is None:
             mask_next = np.ones(num_actions, dtype=bool)
 
@@ -308,7 +362,7 @@ def main(cfg: DictConfig):
         if done:
             episode += 1
             obs, info = env.reset(seed=cfg.seed)
-            obs_vec = preprocess_obs(obs)
+            obs_vec = preprocess_obs(obs, info.get("prev_action"), info.get("prev_moved"))
             print(f"Episode {episode} | return={ep_return:.1f} | len={ep_len}")
             ep_return = 0.0
             ep_len = 0
@@ -348,18 +402,19 @@ def main(cfg: DictConfig):
 
 def evaluate(env: Game2048Env, agent: DiscreteSAC, seed=None, max_steps: int | None = None) -> Tuple[float, int]:
     obs, info = env.reset(seed=seed)
-    obs_vec = preprocess_obs(obs)
+    obs_vec = preprocess_obs(obs, info.get("prev_action"), info.get("prev_moved"))
     ep_return = 0.0
     ep_len = 0
     while True:
         mask = info.get("valid_actions") if isinstance(info.get("valid_actions"), np.ndarray) else None
+        mask = prefer_mask(mask, corner=str(cfg.reward.get("corner", "bottom_right")))
         a = agent.act(obs_vec, greedy=True, mask=mask)
         next_obs, reward, terminated, truncated, info = env.step(a)
         ep_return += float(reward)
         ep_len += 1
         if terminated or truncated or (max_steps is not None and ep_len >= max_steps):
             break
-        obs_vec = preprocess_obs(next_obs)
+        obs_vec = preprocess_obs(next_obs, info.get("prev_action"), info.get("prev_moved"))
     return ep_return, ep_len
 
 

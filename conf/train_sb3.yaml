@@ -16,13 +16,21 @@ buffer:
   capacity: 200000
 
 train:
-  steps: 200000
+  steps: 1000000
   batch_size: 128
   train_freq: 1
   gradient_steps: 1
+  eval_interval: 100000
   eval_max_steps: 5000
 
 reward:
   scale: 0.1
   invalid_move_penalty: -0.5
+  corner_bonus: 0.5        # extra reward when max tile stays in target corner
+  corner: bottom_right     # one of: top_left, top_right, bottom_left, bottom_right
 
+wandb:
+  enabled: true
+  project: rl2048
+  entity: null
+  mode: online   # options: online, offline, disabled

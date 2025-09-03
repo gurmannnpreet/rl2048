@@ -25,7 +25,8 @@ def make_sb3_env():
     # Keep same shaping as training; visual impact is only on rewards, not rendering
     env = InvalidMovePenaltyWrapper(env)
     env = Log2ObsWrapper(env)
-    env = ContinuousActionWrapper(env)
+    # Prefer keeping max tile at bottom-right in action mapping
+    env = ContinuousActionWrapper(env, preferred=[1, 3])
     return env
 
 
@@ -52,6 +53,26 @@ def evaluate_sb3(model, steps: int = 1000, seed: Optional[int] = None, delay: fl
 def evaluate_discrete_sac(path: str, steps: int = 1000, seed: Optional[int] = None, delay: float = 0.1):
     # Import agent utilities from our training script
     from train_sac import DiscreteSAC, preprocess_obs
+    
+    def prefer_mask(mask: np.ndarray, corner: str = "bottom_right") -> np.ndarray:
+        if mask is None:
+            return mask
+        mapping = {
+            "top_left": [0, 2],
+            "top_right": [0, 3],
+            "bottom_left": [1, 2],
+            "bottom_right": [1, 3],
+        }
+        pref = mapping.get(corner, mapping["bottom_right"])
+        mask = mask.astype(bool).copy()
+        if mask.any():
+            pref_mask = np.zeros_like(mask, dtype=bool)
+            for a in pref:
+                if 0 <= a < mask.size:
+                    pref_mask[a] = mask[a]
+            if pref_mask.any():
+                return pref_mask
+        return mask
 
     payload = torch.load(path, map_location="cpu")
     cfg = payload.get("config", {})
@@ -60,7 +81,7 @@ def evaluate_discrete_sac(path: str, steps: int = 1000, seed: Optional[int] = No
     env = make_discrete_env()
     num_actions = int(env.action_space.n)
     obs, info = env.reset(seed=seed)
-    obs_vec = preprocess_obs(obs)
+    obs_vec = preprocess_obs(obs, info.get("prev_action"), info.get("prev_moved"))
     obs_dim = int(obs_vec.shape[0])
 
     agent = DiscreteSAC(
@@ -77,6 +98,7 @@ def evaluate_discrete_sac(path: str, steps: int = 1000, seed: Optional[int] = No
     total_reward = 0.0
     for t in range(steps):
         mask = info.get("valid_actions") if isinstance(info.get("valid_actions"), np.ndarray) else None
+        mask = prefer_mask(mask, corner="bottom_right")
         a = agent.act(obs_vec, greedy=True, mask=mask)
         next_obs, reward, terminated, truncated, info = env.step(a)
         total_reward += float(reward)
@@ -84,7 +106,7 @@ def evaluate_discrete_sac(path: str, steps: int = 1000, seed: Optional[int] = No
         time.sleep(delay)
         if terminated or truncated:
             break
-        obs_vec = preprocess_obs(next_obs)
+        obs_vec = preprocess_obs(next_obs, info.get("prev_action"), info.get("prev_moved"))
 
     print(f"Discrete SAC play: steps={t+1}, return={total_reward:.2f}, score={info.get('score')}, max_tile={info.get('max_tile')}")
 
@@ -99,8 +121,8 @@ def main():
 
     path = args.path
     if path is None:
-        if os.path.exists("sb3_sac_model.zip"):
-            path = "sb3_sac_model.zip"
+        if os.path.exists("sb3_sac_model_corner.zip"):
+            path = "sb3_sac_model_corner.zip"
         elif os.path.exists("model.pt"):
             path = "model.pt"
         else:
@@ -117,4 +139,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
