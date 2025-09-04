@@ -11,7 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from omegaconf import DictConfig, OmegaConf
 
-from game_2048_env import Game2048Env
+from rl2048.envs.game2048 import Game2048Env
 
 
 def set_seed(seed: int | None):
@@ -234,7 +234,7 @@ class DiscreteSAC:
         }
 
 
-@hydra.main(config_path="/Users/gurmannnpreet/Documents/CODING/rl2048/conf", config_name="train", version_base=None)
+@hydra.main(config_path="conf", config_name="train", version_base=None)
 def main(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
 

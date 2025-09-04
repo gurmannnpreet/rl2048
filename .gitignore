@@ -1,4 +1,28 @@
 __pycache__/
+*.pyc
+.DS_Store
+.env
+.venv/
+venv/
+env/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Experiment outputs
 outputs/
+wandb/
 SAC_*/
+
+# Models
+*.pt
+*.zip
+
+# IDE
+.vscode/
+.idea/
+
+# Legacy local file that moved to examples/
 bulb.py

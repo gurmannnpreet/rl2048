@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rl2048"
+version = "0.1.0"
+description = "A clean 2048 Gym environment with SB3 and discrete SAC training scripts"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "rl2048 contributors" }]
+dependencies = [
+  "numpy>=1.24",
+  "gymnasium>=0.29",
+  "hydra-core>=1.3",
+  "omegaconf>=2.3",
+]
+
+[project.optional-dependencies]
+sb3 = [
+  "stable-baselines3>=2.3",
+  "psutil>=5.9",
+  "wandb>=0.16; extra == 'sb3'",
+]
+torch = [
+  "torch>=2.0",
+]
+dev = [
+  "pytest>=7.0",
+  "ruff>=0.4",
+]
+
+[project.scripts]
+rl2048-train-sb3 = "train_sac_sb3:main"
+rl2048-train-discrete = "scripts.train_sac:main"
+rl2048-play = "play_human:main"
+rl2048-use-model = "use_model:main"
+
+[tool.setuptools]
+packages = ["rl2048"]
+include-package-data = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E","F","I","UP"]
+ignore = ["E402"]
+

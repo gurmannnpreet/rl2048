@@ -4,7 +4,7 @@ from typing import Optional
 import hydra
 from omegaconf import DictConfig
 
-from game_2048_env import Game2048Env
+from rl2048.envs.game2048 import Game2048Env
 
 
 def draw_board(stdscr, board, score: int):

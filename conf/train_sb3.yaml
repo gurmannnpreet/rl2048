@@ -7,6 +7,8 @@ seed: 42
 
 agent:
   hidden_dim: 128
+  load_model_path: null
+  net_arch: [256, 256, 256, 256, 256]
   gamma: 0.99
   tau: 0.005
   lr: 0.0003
@@ -16,7 +18,7 @@ buffer:
   capacity: 200000
 
 train:
-  steps: 1000000
+  steps: 2000000
   batch_size: 128
   train_freq: 1
   gradient_steps: 1

@@ -6,7 +6,7 @@ from typing import Optional
 import numpy as np
 import torch
 
-from game_2048_env import Game2048Env
+from rl2048.envs.game2048 import Game2048Env
 
 
 def load_sb3_model(path: str):
@@ -18,8 +18,8 @@ def load_sb3_model(path: str):
 
 
 def make_sb3_env():
-    # Reuse wrappers from the SB3 training script to ensure action/obs compatibility
-    from train_sac_sb3 import Log2ObsWrapper, ContinuousActionWrapper, InvalidMovePenaltyWrapper
+    # Reuse wrappers from the package to ensure action/obs compatibility
+    from rl2048.wrappers.sb3 import Log2ObsWrapper, ContinuousActionWrapper, InvalidMovePenaltyWrapper
 
     env = Game2048Env(render_mode="human")
     # Keep same shaping as training; visual impact is only on rewards, not rendering
@@ -121,8 +121,8 @@ def main():
 
     path = args.path
     if path is None:
-        if os.path.exists("sb3_sac_model_corner.zip"):
-            path = "sb3_sac_model_corner.zip"
+        if os.path.exists("sb3_sac_model_corner_network.zip"):
+            path = "sb3_sac_model_corner_network.zip"
         elif os.path.exists("model.pt"):
             path = "model.pt"
         else:
