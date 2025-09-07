@@ -1,8 +1,0 @@
-Error executing job with overrides: []
-Traceback (most recent call last):
-  File "/Users/gurmannnpreet/Documents/CODING/rl2048/train_sac_sb3.py", line 162, in main
-    model = SAC(
-            ^^^
-NameError: name 'SAC' is not defined
-
-Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
